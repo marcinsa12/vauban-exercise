@@ -30,22 +30,33 @@ export const swapi = {
       const resp = await new Promise((resolve)=>{
         fetch(`${omdbUrl}&s=${movie}`)
           .then(resp => resp.json())
-          .then(resp => resolve(resp.Search[0]))
+          .catch(e => {
+            throw new Error(e)
+          })
+          .then(resp => resolve(resp.Search))
       })
-      return resp
+      if(!resp) throw new Error('Request Failed')
+      return resp[0]
     } catch (error) {
-      return { error: true, msg: error }
+      return { error: true, msg: error.message }
     }
   },
   async getCharacterFilms(urls) {
-    const prom = await Promise.all(
-      urls.map(url =>
-        fetch(url)
-          .then(res => res.json())
-          .then(res => res.title)
+    try {
+      const prom = await Promise.all(
+        urls.map(url =>
+          fetch(url)
+            .then(res => res.json())
+            .catch(e => {
+              throw new Error(e)
+            })
+            .then(res => res.title)
+        )
       )
-    )
-    return prom.filter(title => !!title)
+      return prom.filter(title => !!title)
+    } catch (error) {
+      return {error: true, msg: error.message}
+    }
   },
   async getAllFilms() {
     const prom = await new Promise((resolve)=>{

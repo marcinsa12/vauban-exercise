@@ -1,5 +1,13 @@
 # VAUBAN Front End Test
 
+## Runinng Dev 
+To run this project in dev mode, simply follow:
+```
+
+npm install
+export VUE_APP_OMDB_KEY={YOUR OMDB API KEY} && npm run serve
+```
+
 ## Guidelines
 
 You will build an application that allow an user to search through a list of Star Wars characters and add them to his personal list.

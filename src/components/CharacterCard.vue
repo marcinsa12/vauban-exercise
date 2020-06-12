@@ -23,16 +23,20 @@
           </v-list>
         </v-card-text>
         <v-card flat tile>
-          <v-toolbar flat color="grey" collapse>Staring At:</v-toolbar>
+          <v-toolbar flat color="grey" collapse>Starred At:</v-toolbar>
           <v-card-text class="film-posters">
             <v-img
-              v-for="filmPoster in filmPosters"
-              :key="filmPoster"
+              v-for="(filmPoster, index) in postersToDisplay"
+              :key="filmPoster.Title || index"
+              :src="filmPoster.Poster"
+              :alt="filmPoster.Title || filmPoster"
               max-width="175px"
-              :src="filmPoster"
-              :alt="filmPoster"
               class="film-posters_poster"
-            ></v-img>
+            >
+              <template v-if="!filmPoster.Poster" slot:placeholder>
+                <span>{{filmPoster.Title || filmPoster}}</span>
+              </template>
+            </v-img>
           </v-card-text>
         </v-card>
       </v-expansion-panel-content>
@@ -58,13 +62,9 @@ export default {
     }
   },
   computed: {
-    filmPosters() {
-      let posters = []
-      this.character.films.map(film => {
-        const { poster } = this.films.find(f=> f.title == film) || {}
-        if(poster) posters.push(poster.Poster)
-      })
-      return posters
+    postersToDisplay() {
+      if(this.filmPosters.length) return this.filmPosters.filter(poster => this.character.films.some( film => poster.Title.includes(film)))
+      return this.character.films
     }
   },
   props: {
@@ -72,9 +72,8 @@ export default {
       type: Object,
       required: true
     },
-    films: {
-      type: Array,
-      required: false
+    filmPosters: {
+      type: Array
     }
   }
 };

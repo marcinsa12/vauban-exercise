@@ -4,11 +4,17 @@
         <CharactersCard
           v-for="character in filteredCharacters"
           :key="character.name"
-          :films="films"
           :character="character"
+          :filmPosters="filmPosters"
           class="character-list_element"
         />
     </v-expansion-panels>
+    <v-snackbar
+      v-model="isError.flag" color="error" :timeout="0"
+    >
+      There was a problem connecting to {{isError.msg}}. Make sure you've added all API Keys to env variables
+      <v-btn text @click.native="isError.flag = false">Close</v-btn>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -48,16 +54,32 @@ export default {
   data: () => ({
     characters: characters,
     films: [],
-    dataLoaded: false
+    filmPosters: [],
+    dataLoaded: false,
+    isError: {
+      flag: false,
+      msg: ''
+    }
   }),
   async mounted() {
     this.characters.map(async char => {
       char.species = await this.getSpecies(char.species[0])
       char.films = await this.getCharacterFilms(char.films)
+      if(char.films.error || char.species.error) {
+        this.isError.flag = true,
+        this.isError.msg = 'swapi'
+      }
     })
     this.films = await this.$swapi.getAllFilms();
     this.films.map(async film => {
       film.poster = await this.$swapi.getPoster(film.title)
+      if(film.poster.error) {
+        this.isError.flag = true,
+        this.isError.msg = 'OMDB'
+        return
+      }
+      this.filmPosters.push(film.poster)
+
     })
     this.dataLoaded = true
   },
@@ -69,7 +91,7 @@ export default {
     async getCharacterFilms(urls) {
       const resp = await this.$swapi.getCharacterFilms(urls)
       return resp
-    }
+    },
   }
 };
 </script>
